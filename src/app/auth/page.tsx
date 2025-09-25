@@ -1,0 +1,1 @@
+export default function AuthHub(){ return (<main className='p-8'><h1 className='text-3xl font-bold'>Auth</h1><p>Sign in / Sign up portal.</p></main>); }

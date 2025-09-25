@@ -1,0 +1,148 @@
+
+# Entrestate Data Ingestion Policy v2.0
+
+# This policy outlines the prioritized sources, methods, and cadences for
+# the Entrestate market intelligence data pipeline. It is the source of truth
+# for all data ingestion development and operations.
+
+# Grade A: Core, High-Frequency, High-Trust Sources
+# These sources form the foundation of our real-time market understanding.
+
+source_inventory_grade_a:
+  - source_id: google_ads
+    grade: A
+    category: Ads APIs
+    ingestion_method: OAuth API connector / webhook
+    cadence: 1-5min
+    legal_note: Follow Google Ads TOS
+    complexity: high
+    endpoint: https://developers.google.com/google-ads/api
+
+  - source_id: meta_business
+    grade: A
+    category: Ads APIs
+    ingestion_method: OAuth API connector / webhook
+    cadence: 1-5min
+    legal_note: Follow Meta TOS
+    complexity: high
+    endpoint: https://developers.facebook.com/docs/marketing-api
+
+  - source_id: tiktok_ads
+    grade: A
+    category: Ads APIs
+    ingestion_method: OAuth API connector / webhook
+    cadence: 5-15min
+    legal_note: Follow TikTok Ads TOS
+    complexity: high
+    endpoint: https://ads.tiktok.com/marketing_api
+
+  - source_id: youtube_data
+    grade: A
+    category: Social/Ads
+    ingestion_method: API & PubSub/webhook
+    cadence: 1-15min
+    legal_note: Follow YouTube API TOS
+    complexity: medium
+    endpoint: https://developers.google.com/youtube
+
+  - source_id: google_search_serp
+    grade: A
+    category: SERP
+    ingestion_method: headless snapshots + structured scraping
+    cadence: 5-60min
+    legal_note: Prefer licensed feeds
+    complexity: high
+    endpoint: custom query pool
+
+  - source_id: developer_site_feeds
+    grade: A
+    category: Listings/Feeds
+    ingestion_method: API/SFTP/XML feed ingestion
+    cadence: 5-30min
+    legal_note: MLS/license checks
+    complexity: medium
+    endpoint: developer.example.com/feed.xml
+
+  - source_id: major_mls
+    grade: A
+    category: Listings
+    ingestion_method: licensed feed/API
+    cadence: 5-30min
+    legal_note: MLS licensing strict
+    complexity: medium-high
+    endpoint: MLS vendor endpoint
+
+  - source_id: broker_sites
+    grade: A
+    category: Listings/Pages
+    ingestion_method: headless crawler + snapshot
+    cadence: 15-60min
+    legal_note: Respect robots & TOS
+    complexity: high
+    endpoint: crawl list
+
+  - source_id: government_land_registry
+    grade: A
+    category: Legal/Registry
+    ingestion_method: API or scheduled scrape
+    cadence: hourly-daily
+    legal_note: public data but check reuse
+    complexity: medium
+    endpoint: registry.gov/api
+
+  - source_id: building_permits_portal
+    grade: A
+    category: Permits
+    ingestion_method: scheduled scrape/API
+    cadence: hourly-daily
+    legal_note: public; cite source
+    complexity: medium
+    endpoint: planning.gov/permits
+
+  - source_id: news_wire
+    grade: A
+    category: Media
+    ingestion_method: RSS + news APIs
+    cadence: 5-30min
+    legal_note: publisher TOS
+    complexity: low-medium
+    endpoint: https://newsapi.org
+
+  - source_id: press_release_wires
+    grade: A
+    category: Media
+    ingestion_method: RSS/API
+    cadence: 5-30min
+    legal_note: licensing for redistribution
+    complexity: low
+    endpoint: PRWire endpoints
+
+  - source_id: developer_social_instagram
+    grade: A
+    category: Social
+    ingestion_method: API + headless for stories
+    cadence: 1-10min
+    legal_note: API limits
+    complexity: medium-high
+    endpoint: instagram.com/{account}
+
+  - source_id: developer_social_linkedin
+    grade: A
+    category: Social
+    ingestion_method: API + scraping
+    cadence: 5-30min
+    legal_note: LinkedIn TOS restrictive
+    complexity: high
+    endpoint: linkedin.com/company/{id}
+
+  - source_id: developer_social_x
+    grade: A
+    category: Social
+    ingestion_method: API + streaming
+    cadence: 1-10min
+    legal_note: X API TOS
+    complexity: medium
+    endpoint: https://developer.twitter.com
+
+# Grade B & C sources from the provided inventory will be added as the
+# ingestion pipeline matures. The immediate focus is on Grade A.

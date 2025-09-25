@@ -1,0 +1,26 @@
+{
+  "note": "This mirrors src/lib/apps/io.ts. Keep these in sync.",
+  "apps": [
+    {
+      "id": "property-marketer-ai"
+    },
+    {
+      "id": "campaign-creator-meta"
+    },
+    {
+      "id": "landing-page-designer"
+    },
+    {
+      "id": "instagram-leads"
+    },
+    {
+      "id": "listing-portal-ai"
+    },
+    {
+      "id": "commission-calculator"
+    },
+    {
+      "id": "sales-ai-assistant"
+    }
+  ]
+}

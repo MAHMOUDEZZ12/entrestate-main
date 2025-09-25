@@ -1,0 +1,1 @@
+export default function AppsPage(){ return (<main className='p-8'><h1 className='text-3xl font-bold'>Apps</h1><p>List of apps lives here.</p></main>); }

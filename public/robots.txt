@@ -1,0 +1,9 @@
+# See https://www.robotstxt.org/robotstxt.html for syntax and more information
+
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /onboarding/
+
+Sitemap: https://your-domain.com/sitemap.xml

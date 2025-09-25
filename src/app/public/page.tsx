@@ -1,0 +1,1 @@
+export default function PublicHub(){ return (<main className='p-8'><h1 className='text-3xl font-bold'>Public</h1><p>Public storefront and resources.</p></main>); }
