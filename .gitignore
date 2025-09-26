@@ -1,2 +1,13 @@
 -e node_modules/\n.next/\n.env*\n.DS_Store\n.firebase/\nfunctions/.runtimeconfig.json
 node_modules
+.next/
+.next/
+.vercel/
+logs/
+*.log
+*.env*
+.next/
+.vercel/
+logs/
+*.log
+*.env*
