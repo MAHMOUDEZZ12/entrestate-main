@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to generate a clear, client-friendly payment plan for a real estate property.
  *

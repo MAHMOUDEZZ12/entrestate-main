@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to create a customizable, embeddable chatbot for a website.
  *

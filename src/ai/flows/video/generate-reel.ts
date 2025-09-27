@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to generate a video reel from project assets with auto-captions.
  *

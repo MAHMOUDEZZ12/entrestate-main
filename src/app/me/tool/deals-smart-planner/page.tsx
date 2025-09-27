@@ -9,9 +9,9 @@ import { Loader2, Sparkles, AlertCircle, Bot, Wand2, MessageCircle, FileText, Ar
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/ui/page-header';
 import { useAuth } from '@/hooks/useAuth';
-import { dealsSmartPlanner } from '@/ai/flows/sales/deals-smart-planner';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
+import { runTool } from '@/lib/run-tool';
 
 type PlanStep = {
     type: 'question' | 'action' | 'suggestion';
@@ -110,8 +110,11 @@ export default function DealsSmartPlannerPage() {
         return;
     }
     try {
-      const response = await dealsSmartPlanner({ goal, userContext: context });
-      setPlanHistory(prev => [...prev, response.nextStep]);
+      const response = await runTool<{ nextStep: PlanStep }>('deals-smart-planner', {
+        goal,
+        userContext: context,
+      });
+      setPlanHistory((prev) => [...prev, response.nextStep]);
     } catch(e: any) {
        setError(e.message);
        toast({ title: "Planner Error", description: e.message, variant: "destructive" });

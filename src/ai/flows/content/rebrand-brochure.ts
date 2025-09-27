@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview A flow that rebrands a brochure with personal details, company logo, and chosen branding elements.
  *

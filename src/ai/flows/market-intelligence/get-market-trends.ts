@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to synthesize market trends from qualitative data sources.
  *

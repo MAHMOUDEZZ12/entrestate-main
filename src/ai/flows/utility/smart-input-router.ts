@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to analyze a user's text input and route it to the appropriate action.
  *

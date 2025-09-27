@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview An AI flow to scan for databases and analyze their suitability for migration to AlloyDB.

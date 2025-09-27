@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to analyze a lease agreement for potential risks and non-standard clauses.
  *

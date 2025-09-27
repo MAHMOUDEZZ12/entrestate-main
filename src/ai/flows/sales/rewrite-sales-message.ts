@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview An AI flow to rewrite sales messages for different tones and strategies.

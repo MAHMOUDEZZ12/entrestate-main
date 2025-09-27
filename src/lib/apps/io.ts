@@ -37,7 +37,6 @@ export type AppContract = {
   version?: string;
   enabled?: boolean;
   status?: 'alpha' | 'beta' | 'ga';
-  allowedRoles?: ('visitor'|'member'|'pro'|'admin')[];
 };
 
 const urlRe = /^https?:\/\/[^\s]+$/i;

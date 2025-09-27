@@ -1,111 +1,280 @@
 
 'use client';
-import React, { useMemo, useState } from 'react';
-import { CopyButton } from '@/components/ui/CopyButton';
-import { getRoleFromEnv } from '@/lib/auth/roles';
-import { appsRegistry, AppContract } from '@/lib/apps/io';
 
-export default function AppsIOPage(){
-  const [q, setQ] = useState(''));
+import { useMemo, useState } from 'react';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { getRoleFromEnv } from '@/lib/auth/roles';
+import { appsRegistry, type AppContract } from '@/lib/apps/io';
+type AppField = AppContract['inputs'][number];
+
+export default function AppsIOPage() {
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('all');
+  const [status, setStatus] = useState('all');
+  const [availability, setAvailability] = useState<'all' | 'enabled' | 'disabled'>('all');
   const role = getRoleFromEnv();
-  const apps = useMemo(() => {
-    const term = q.toLowerCase().trim();
-    if(!term) return appsRegistry.filter(a => (!a.allowedRoles || a.allowedRoles.includes(role)) && ( !a.allowedRoles || a.allowedRoles.includes(role));
-    return appsRegistry.filter(a => (!a.allowedRoles || a.allowedRoles.includes(role)) && (
-      a.name.toLowerCase().includes(term) ||
-      a.id.toLowerCase().includes(term) ||
-      a.description.toLowerCase().includes(term)
+
+  const categories = useMemo(() => {
+    const values = new Set<string>();
+    appsRegistry.forEach((app) => values.add(app.category));
+    return Array.from(values).sort();
+  }, []);
+
+  const statuses = useMemo(() => {
+    const values = new Set<string>();
+    appsRegistry.forEach((app) => app.status && values.add(app.status));
+    return Array.from(values).sort();
+  }, []);
+
+  const filteredApps = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return appsRegistry.filter((app) => {
+      if (app.allowedRoles && !app.allowedRoles.includes(role)) return false;
+      if (category !== 'all' && app.category !== category) return false;
+      if (status !== 'all' && app.status !== status) return false;
+      if (availability === 'enabled' && !app.enabled) return false;
+      if (availability === 'disabled' && app.enabled) return false;
+      if (!term) return true;
+      const haystack = [app.name, app.id, app.description]
+        .filter(Boolean)
+        .map((value) => value!.toLowerCase());
+      return haystack.some((value) => value.includes(term));
+    });
+  }, [availability, category, query, role, status]);
+
+  const aggregate = useMemo(() => {
+    const totals = filteredApps.reduce(
+      (acc, app) => {
+        acc.inputs += app.inputs.length;
+        acc.outputs += app.outputs.length;
+        if (app.enabled) acc.enabled += 1;
+        return acc;
+      },
+      { inputs: 0, outputs: 0, enabled: 0 },
     );
-  }, [q]);
+
+    return {
+      total: filteredApps.length,
+      enabled: totals.enabled,
+      avgInputs: filteredApps.length ? Math.round((totals.inputs / filteredApps.length) * 10) / 10 : 0,
+      avgOutputs: filteredApps.length ? Math.round((totals.outputs / filteredApps.length) * 10) / 10 : 0,
+    };
+  }, [filteredApps]);
 
   return (
-    <main className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-2">Apps Input/Output Review</h1>
-      <p className="text-muted-foreground mb-4">Single source of truth for I/O contracts. Validate payloads via <code>/api/apps/validate</code>.</p>
+    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
+      <header className="space-y-4 rounded-3xl border bg-card/60 p-6 shadow-sm">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Apps Input/Output Registry</h1>
+          <p className="text-sm text-muted-foreground">
+            Browse the canonical contracts that power automations and internal tooling. Validate payloads with
+            <code> /api/apps/validate</code> before shipping to production.
+          </p>
+        </div>
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Metric label="Visible apps" value={aggregate.total.toString()} />
+          <Metric label="Avg. inputs" value={aggregate.avgInputs.toString()} />
+          <Metric label="Avg. outputs" value={aggregate.avgOutputs.toString()} />
+          <Metric label="Enabled today" value={`${aggregate.enabled} / ${filteredApps.length || 0}`} />
+        </dl>
+      </header>
 
-      <div className="flex items-center gap-3 mb-6">
-        <input
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="Search apps…"
-          className="w-full max-w-md border rounded-lg px-3 py-2"
-        />
-        <a href="/api/apps/export?format=json" className="border rounded-lg px-3 py-2 text-sm" target="_blank">Export JSON</a>
-        <a href="/api/apps/export?format=csv" className="border rounded-lg px-3 py-2 text-sm" target="_blank">Export CSV</a>
-      </div>
+      <Card>
+        <CardContent className="flex flex-wrap items-center gap-3 p-4">
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by name, ID, or description"
+            className="w-full max-w-sm"
+          />
 
-      <div className="grid gap-6">
-        {apps.map(app => <AppCard key={app.id} app={app} />)}
-      </div>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {statuses.map((state) => (
+                <SelectItem key={state} value={state}>
+                  {state.toUpperCase()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={availability} onValueChange={(value) => setAvailability(value as typeof availability)}>
+            <SelectTrigger className="w-[170px]">
+              <SelectValue placeholder="Availability" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All apps</SelectItem>
+              <SelectItem value="enabled">Enabled only</SelectItem>
+              <SelectItem value="disabled">Disabled only</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="ml-auto flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <a href="/api/apps/export?format=json" target="_blank" rel="noreferrer">
+                Export JSON
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <a href="/api/apps/export?format=csv" target="_blank" rel="noreferrer">
+                Export CSV
+              </a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <section className="grid gap-6">
+        {filteredApps.map((app) => (
+          <AppCard key={app.id} app={app} />
+        ))}
+        {filteredApps.length === 0 ? (
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle>No matches found</CardTitle>
+              <CardDescription>Try adjusting your search keywords or check role permissions.</CardDescription>
+            </CardHeader>
+          </Card>
+        ) : null}
+      </section>
     </main>
   );
 }
 
-function AppCard({ app }: { app: AppContract }){
+function AppCard({ app }: { app: AppContract }) {
   return (
-    <section className="border rounded-2xl p-5">
-      <header className="flex flex-wrap items-center justify-between gap-3 mb-3">
+    <Card className="border-primary/15 shadow-sm">
+      <CardHeader className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold">{app.name}</h2>
-          <p className="text-sm text-muted-foreground">{app.description}</p>
+          <CardTitle className="text-xl">{app.name}</CardTitle>
+          <CardDescription>{app.description}</CardDescription>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground/80">
+            <Badge variant="outline">{app.category}</Badge>
+            {app.status ? <Badge variant="secondary">{app.status.toUpperCase()}</Badge> : null}
+            <Badge variant={app.enabled ? 'secondary' : 'outline'}>{app.enabled ? 'Enabled' : 'Disabled'}</Badge>
+          </div>
         </div>
-        <div className="text-right">
-          <div className="text-xs text-muted-foreground">ID: <code>{app.id}</code></div>
-          <div className="text-xs text-muted-foreground">v{app.version || '0.0.0'} • {app.status || 'alpha'} • {app.enabled ? 'Enabled' : 'Disabled'}</div>
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <div>
+            ID: <code>{app.id}</code>
+          </div>
+          <div>
+            v{app.version || '0.0.0'} • {app.status || 'alpha'} • {app.enabled ? 'Enabled' : 'Disabled'}
+          </div>
+          {app.category ? <div>{app.category}</div> : null}
         </div>
-      </header>
+      </CardHeader>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <h3 className="font-semibold mb-2">Inputs</h3>
-          <FieldTable fields={app.inputs} />
+      <CardContent className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div>
+            <h3 className="mb-3 font-semibold">Inputs</h3>
+            <FieldTable fields={app.inputs} emptyLabel="No inputs declared" />
+          </div>
+          <div>
+            <h3 className="mb-3 font-semibold">Outputs</h3>
+            <FieldTable fields={app.outputs} emptyLabel="No outputs declared" />
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold mb-2">Outputs</h3>
-          <FieldTable fields={app.outputs} />
-        </div>
-      </div>
 
-      <footer className="mt-4 flex items-center justify-between text-sm">
-        <div className="flex items-center gap-3">
-          <a href={`/api/apps/sample?appId=${app.id}`} className="underline text-sm" target="_blank" rel="noreferrer">Get sample payload</a>
-          <CopyButton text={JSON.stringify({ appId: app.id, payload: {} }, null, 2)} label="Copy POST template" />
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+          <div className="flex items-center gap-3">
+            <Button asChild variant="link" size="sm" className="px-0">
+              <a href={`/api/apps/sample?appId=${app.id}`} target="_blank" rel="noreferrer">
+                View sample payload
+              </a>
+            </Button>
+            <CopyButton text={JSON.stringify({ appId: app.id, payload: {} }, null, 2)} label="Copy POST template" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {app.allowedRoles ? (
+              <Badge variant="outline">Roles: {app.allowedRoles.join(', ')}</Badge>
+            ) : (
+              <Badge variant="secondary">Open to all roles</Badge>
+            )}
+            <Badge variant="outline">Inputs: {app.inputs.length}</Badge>
+            <Badge variant="outline">Outputs: {app.outputs.length}</Badge>
+          </div>
         </div>
-        <a href={`/api/apps/sample?appId=${app.id}`} className="underline text-sm" target="_blank" rel="noreferrer">Get sample payload</a>
-        <div className="text-muted-foreground">{app.category}</div>
-      </footer>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
 
-function FieldTable({ fields }: { fields: any[] }){
+function FieldTable({ fields, emptyLabel }: { fields: AppField[] | undefined; emptyLabel: string }) {
+  if (!fields || fields.length === 0) {
+    return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+  }
+
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-xl border">
       <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left border-b">
-            <th className="py-2 pr-2">Key</th>
-            <th className="py-2 pr-2">Label</th>
-            <th className="py-2 pr-2">Type</th>
-            <th className="py-2 pr-2">Req</th>
-            <th className="py-2">Description / Example</th>
+        <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+          <tr>
+            <th className="px-3 py-2 text-left">Key</th>
+            <th className="px-3 py-2 text-left">Label</th>
+            <th className="px-3 py-2 text-left">Type</th>
+            <th className="px-3 py-2 text-left">Required</th>
+            <th className="px-3 py-2 text-left">Description / Example</th>
           </tr>
         </thead>
         <tbody>
-          {fields.map((f, i) => (
-            <tr key={i} className="border-b hover:bg-gray-50">
-              <td className="py-2 pr-2"><code>{f.key}</code></td>
-              <td className="py-2 pr-2">{f.label}</td>
-              <td className="py-2 pr-2">{f.type}</td>
-              <td className="py-2 pr-2">{f.required ? 'Yes' : ''}</td>
-              <td className="py-2 text-gray-600">
-                {f.description || ''}
-                {f.example ? <div className="text-xs text-gray-500 mt-1">e.g., {Array.isArray(f.example) ? JSON.stringify(f.example) : String(f.example)}</div> : null}
+          {fields.map((field) => (
+            <tr key={field.key} className="border-t">
+              <td className="px-3 py-2 font-mono text-xs">{field.key}</td>
+              <td className="px-3 py-2">{field.label}</td>
+              <td className="px-3 py-2 text-muted-foreground">{field.type}</td>
+              <td className="px-3 py-2">{field.required ? 'Yes' : 'No'}</td>
+              <td className="px-3 py-2 text-muted-foreground">
+                {field.description}
+                {field.example ? (
+                  <div className="mt-1 text-xs text-muted-foreground/80">
+                    e.g. {Array.isArray(field.example) ? JSON.stringify(field.example) : String(field.example)}
+                  </div>
+                ) : null}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-primary/15 bg-card p-4 shadow-sm">
+      <dt className="text-xs uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-2xl font-semibold text-foreground">{value}</dd>
     </div>
   );
 }

@@ -10,10 +10,10 @@ import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { syncBayutListing } from '@/ai/flows/developer-backend/sync-bayut-listing';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { runTool } from '@/lib/run-tool';
 
 type Status = 'pending' | 'running' | 'completed' | 'error';
 
@@ -82,7 +82,7 @@ export default function BayutSyncPage() {
       setTimeout(() => {
         // Final API call happens after the last visual step
         if (index === steps.length - 1) {
-             syncBayutListing(parsedPlan)
+            runTool<{ success: boolean; message: string }>('bayut-sync', parsedPlan)
             .then(result => {
                 if (result.success) {
                     toast({ title: 'Synchronization Complete!', description: result.message });

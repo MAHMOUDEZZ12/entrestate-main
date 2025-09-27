@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { track } from '@/lib/events';
 import { Label } from '@/components/ui/label';
-import { MetaAutoPilotInput, MetaAutoPilotOutput } from '@/ai/flows/types';
-import { runMetaAutoPilot } from '@/ai/flows/meta-pilot/meta-auto-pilot';
+import type { MetaAutoPilotOutput } from '@/ai/flows/types';
+import { runTool } from '@/lib/run-tool';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -82,9 +82,10 @@ export default function MetaAutoPilotPage() {
     runStep(0);
 
     try {
-        const payload: MetaAutoPilotInput = { projectId: selectedProject, campaignGoal: selectedGoal };
-        
-        const data = await runMetaAutoPilot(payload);
+        const data = await runTool<MetaAutoPilotOutput>('meta-auto-pilot', {
+          projectId: selectedProject,
+          campaignGoal: selectedGoal,
+        });
 
         setFinalResult(data);
         track('autopilot_execution_succeeded', { projectId: selectedProject });

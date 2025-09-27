@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview A Genkit tool to fetch transaction details from the PayPal API.
  *

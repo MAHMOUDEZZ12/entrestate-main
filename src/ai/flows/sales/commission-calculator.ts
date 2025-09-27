@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to calculate sales commissions with a detailed breakdown.
  *

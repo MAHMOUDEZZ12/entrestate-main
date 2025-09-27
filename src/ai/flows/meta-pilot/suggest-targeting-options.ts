@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview AI flow to suggest targeting options for ad campaigns based on project details and target audience.
  *

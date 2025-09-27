@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow that acts as a strategic deal planner for real estate agents.
  *

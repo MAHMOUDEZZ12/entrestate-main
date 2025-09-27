@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to generate authentic, user-generated content (UGC) style video scripts.
  *

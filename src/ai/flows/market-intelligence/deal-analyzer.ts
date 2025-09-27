@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview An AI flow to analyze a real estate deal's investment potential.

@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to generate a plan for editing PDF documents based on user instructions.
  *

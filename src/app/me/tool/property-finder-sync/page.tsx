@@ -10,10 +10,10 @@ import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { syncPropertyFinderListing } from '@/ai/flows/developer-backend/sync-property-finder-listing';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { runTool } from '@/lib/run-tool';
 
 type Status = 'pending' | 'running' | 'completed' | 'error';
 
@@ -72,7 +72,7 @@ export default function PropertyFinderSyncPage() {
         
         if (index >= steps.length -1) { // After the last visual step
             setTimeout(() => {
-                syncPropertyFinderListing(parsedPlan)
+                runTool<{ success: boolean; message: string }>('propertyfinder-sync', parsedPlan)
                 .then(result => {
                     if (result.success) {
                         toast({ title: 'Synchronization Complete!', description: result.message });

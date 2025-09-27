@@ -13,7 +13,30 @@ import { useToast } from '@/hooks/use-toast';
 import { track } from '@/lib/events';
 import { PageHeader } from '@/components/ui/page-header';
 import { useAuth } from '@/hooks/useAuth';
-import { dealAnalyzer, DealAnalyzerInputSchema, DealAnalyzerOutput } from '@/ai/flows/market-intelligence/deal-analyzer';
+import { z } from 'zod';
+import { runTool } from '@/lib/run-tool';
+
+const DealAnalyzerInputSchema = z.object({
+  propertyAddress: z.string().min(3, 'Please provide a valid address'),
+});
+
+type DealAnalyzerInput = z.infer<typeof DealAnalyzerInputSchema>;
+
+interface DealAnalyzerOutput {
+  fetchedData: {
+    estimatedValue: number;
+    estimatedMonthlyRent: number;
+    estimatedMonthlyExpenses: number;
+  };
+  analysis: {
+    analysisSummary: string;
+    monthlyMortgagePayment: number;
+    monthlyCashFlow: number;
+    cashOnCashROI: number;
+    capitalizationRate: number;
+    totalInitialInvestment: number;
+  };
+}
 
 const ToolPage = () => {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -33,7 +56,7 @@ const ToolPage = () => {
     }
   });
 
-  const handleGeneration = async (data: any) => {
+  const handleGeneration = async (data: DealAnalyzerInput) => {
     setIsLoading(true);
     setError(null);
     setResult(null);
@@ -46,7 +69,7 @@ const ToolPage = () => {
     
     try {
         track('tool_run_started', { toolId: 'deal-analyzer' });
-        const responseData = await dealAnalyzer(data);
+        const responseData = await runTool<DealAnalyzerOutput>('deal-analyzer', data);
         setResult(responseData);
         track('tool_run_succeeded', { toolId: 'deal-analyzer' });
     } catch (e: any) {

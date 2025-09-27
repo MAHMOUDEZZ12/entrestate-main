@@ -10,8 +10,8 @@ import { Loader2, Sparkles, AlertCircle, Terminal, Play, Bot } from 'lucide-reac
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/ui/page-header';
 import { useAuth } from '@/hooks/useAuth';
-import { generateAdFromBrochure } from '@/ai/flows/meta-pilot/generate-ad-from-brochure';
 import { cn } from '@/lib/utils';
+import { runTool } from '@/lib/run-tool';
 import Image from 'next/image';
 
 type LogEntry = {
@@ -58,15 +58,19 @@ const ToolPage = () => {
     const focusArea = focusMatch ? focusMatch[1] : "A luxury property";
 
     try {
-      addLog({ type: 'status', message: 'Running AI flow: generateAdFromBrochure...'});
-      const result = await generateAdFromBrochure({
+      addLog({ type: 'status', message: 'Calling /api/run (insta-ads-designer)...'});
+      const result = await runTool<any>('insta-ads-designer', {
         focusArea,
         projectName: focusArea,
-        toneOfVoice: 'Luxury & Exclusive'
+        toneOfVoice: 'Luxury & Exclusive',
       });
       addLog({ type: 'status', message: '✅ Task completed successfully. 2 assets generated.'});
-      addLog({ type: 'result', message: 'Generated Ad Copy:', data: result.adCopy });
-      addLog({ type: 'result', message: 'Generated Ad Design:', data: result.adDesign });
+      if (result?.adCopy) {
+        addLog({ type: 'result', message: 'Generated Ad Copy:', data: result.adCopy });
+      }
+      if (result?.adDesign) {
+        addLog({ type: 'result', message: 'Generated Ad Design:', data: result.adDesign });
+      }
 
     } catch (e: any) {
         addLog({ type: 'error', message: `Execution failed: ${e.message}` });
