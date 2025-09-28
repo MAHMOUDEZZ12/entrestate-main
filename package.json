@@ -14,7 +14,10 @@
     "postinstall": "patch-package",
     "test:apps": "node tests/apps-validation.test.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@genkit-ai/firebase": "1.19.3",
@@ -82,6 +85,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
