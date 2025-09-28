@@ -1,4 +1,5 @@
 'use client'
+
 import PayPalButton from '@/components/platform/payments/PayPalButton'
 
 const plans = [
@@ -8,10 +9,20 @@ const plans = [
   { id: 'whatsmap', name: 'WhatsMAP', price: '$20/mo', features: ['WhatsApp Agent','Market Library'] },
 ]
 
+const hasPayPal = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+
 export default function PricingPage() {
   return (
     <div className="space-y-6" id="plans">
       <h1 className="text-2xl font-semibold">Simple pricing</h1>
+
+      {!hasPayPal && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-200">
+          PayPal sandbox not configured. Set <code className="font-mono">NEXT_PUBLIC_PAYPAL_CLIENT_ID</code> to enable purchase.
+          You can still explore the workspace & tools.
+        </div>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {plans.map(p => (
           <div key={p.id} className="rounded-xl border border-white/10 p-5">
@@ -20,9 +31,16 @@ export default function PricingPage() {
             <ul className="mt-3 text-sm list-disc list-inside text-white/70">
               {p.features.map(f => <li key={f}>{f}</li>)}
             </ul>
-            <div className="mt-4">
-              <PayPalButton planId={p.id} successUrl="/workspace?activated=1" />
-            </div>
+            {hasPayPal ? (
+              <PayPalButton planId={p.id} successUrl="/workspace?activated=1" className="mt-4 w-full" />
+            ) : (
+              <a
+                href="/workspace"
+                className="mt-4 block rounded-md border border-white/10 px-3 py-2 text-center text-sm hover:bg-white/5"
+              >
+                Explore Workspace
+              </a>
+            )}
           </div>
         ))}
       </div>
