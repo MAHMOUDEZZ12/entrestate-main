@@ -1,15 +1,13 @@
-'use client';
+'use client'
 
-import type { ReactNode } from 'react';
-import { AppHeader } from '@/components/nav/AppHeader';
-import { AppFooter } from '@/components/nav/AppFooter';
+import type { ReactNode } from 'react'
+import { Toaster } from '@/components/ui/toaster'
 
 export default function BrandShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <AppHeader />
-      <main className="flex-1">{children}</main>
-      <AppFooter />
+    <div className="min-h-screen bg-neutral-950 text-white">
+      {children}
+      <Toaster />
     </div>
-  );
+  )
 }
