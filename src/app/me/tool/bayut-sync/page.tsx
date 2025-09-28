@@ -13,7 +13,7 @@ export default function BayutSyncPage() {
     setResult(null);
     try {
       if (!bayut.syncListing) return;
-      const res = await bayut.syncListing({ listingId, auth: null });
+      const res = await bayut.syncListing({ listingId });
       setResult(res);
     } finally {
       setLoading(false);

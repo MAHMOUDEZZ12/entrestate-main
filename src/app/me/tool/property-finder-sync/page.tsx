@@ -13,7 +13,7 @@ export default function PropertyFinderSyncPage() {
     setResult(null);
     try {
       if (!propertyFinder.syncListing) return;
-      const res = await propertyFinder.syncListing({ listingId, auth: null });
+      const res = await propertyFinder.syncListing({ listingId });
       setResult(res);
     } finally {
       setLoading(false);

@@ -13,9 +13,9 @@ const publicPaths = [
   "/community",
 ];
 
-test("home renders and has Solutions link", async ({ page }) => {
+test("home renders hero copy", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText(/Solutions/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /AI operating system/i })).toBeVisible();
 });
 
 test("public pages respond", async ({ page }) => {

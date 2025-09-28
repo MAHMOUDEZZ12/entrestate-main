@@ -1,25 +1,49 @@
 'use client'
 
 import PayPalButton from '@/components/platform/payments/PayPalButton'
+import type { PlanId } from '@/lib/payments/utils'
 
-const plans = [
-  { id: 'meta-suite-basic', name: 'Meta Marketing Suite', price: '$25/mo', features: ['AI Ads','Reels','Page Ops'] },
-  { id: 'listing-portal-basic', name: 'Listing Portal', price: '$39/mo', features: ['Sync','Analytics','Trackers'] },
-  { id: 'reality-designer', name: 'Reality Designer', price: '$29/mo', features: ['Sites','Landing Pages','Assets'] },
-  { id: 'whatsmap', name: 'WhatsMAP', price: '$20/mo', features: ['WhatsApp Agent','Market Library'] },
+type Plan = {
+  id: PlanId
+  name: string
+  price: string
+  features: string[]
+}
+
+const plans: Plan[] = [
+  { id: 'meta-suite-basic', name: 'Meta Marketing Suite', price: '$25/mo', features: ['AI Ads', 'Reels', 'Page Ops'] },
+  { id: 'listing-portal-basic', name: 'Listing Portal', price: '$39/mo', features: ['Sync', 'Analytics', 'Trackers'] },
+  { id: 'reality-designer', name: 'Reality Designer', price: '$29/mo', features: ['Sites', 'Landing Pages', 'Assets'] },
+  { id: 'whatsmap', name: 'WhatsMAP', price: '$20/mo', features: ['WhatsApp Agent', 'Market Library'] },
 ]
 
 const hasPayPal = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+
+const planEnvKey = (planId: PlanId) => `NEXT_PUBLIC_PAYPAL_PLAN_ID_${planId.replace(/-/g, '_').toUpperCase()}`
+
+const missingPlanKeys = plans
+  .map((plan) => planEnvKey(plan.id))
+  .filter((key) => !process.env[key])
+
+const missingConfig = [
+  ...(!hasPayPal ? ['NEXT_PUBLIC_PAYPAL_CLIENT_ID'] : []),
+  ...missingPlanKeys,
+]
 
 export default function PricingPage() {
   return (
     <div className="space-y-6" id="plans">
       <h1 className="text-2xl font-semibold">Simple pricing</h1>
 
-      {!hasPayPal && (
+      {missingConfig.length > 0 && (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-200">
-          PayPal sandbox not configured. Set <code className="font-mono">NEXT_PUBLIC_PAYPAL_CLIENT_ID</code> to enable purchase.
-          You can still explore the workspace & tools.
+          PayPal purchase flow disabled. Set the following environment variables to enable checkout:
+          <ul className="mt-2 list-disc list-inside text-xs text-amber-100/80">
+            {missingConfig.map((key) => (
+              <li key={key}><code className="font-mono">{key}</code></li>
+            ))}
+          </ul>
+          <p className="mt-2">You can still explore the workspace &amp; tools.</p>
         </div>
       )}
 
@@ -31,7 +55,7 @@ export default function PricingPage() {
             <ul className="mt-3 text-sm list-disc list-inside text-white/70">
               {p.features.map(f => <li key={f}>{f}</li>)}
             </ul>
-            {hasPayPal ? (
+            {hasPayPal && process.env[planEnvKey(p.id)] ? (
               <PayPalButton planId={p.id} successUrl="/workspace?activated=1" className="mt-4 w-full" />
             ) : (
               <a
