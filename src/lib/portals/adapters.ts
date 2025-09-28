@@ -1,3 +1,5 @@
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export type Listing = {
   id?: string;
   title?: string;
@@ -12,11 +14,29 @@ export type Listing = {
   raw?: unknown;
 };
 
+export interface PortalSyncOptions {
+  auth?: Record<string, unknown>;
+  listingId: string;
+}
+
+export interface PortalSyncResult {
+  ok: boolean;
+  syncedAt: string;
+  listingId: string;
+  portal: 'bayut' | 'propertyfinder';
+  note?: string;
+}
+
 export interface PortalAdapter {
   id: 'bayut' | 'propertyfinder' | 'dubizzle' | 'emaar';
   name: string;
   toPortal(listing: Listing): Record<string, unknown>;
   validate?(listing: Listing): { ok: boolean; errors?: string[] };
+  syncListing?: (options: PortalSyncOptions) => Promise<PortalSyncResult>;
+}
+
+function authNote(auth?: Record<string, unknown>) {
+  return auth ? 'auth received' : 'no auth';
 }
 
 export const bayutAdapter: PortalAdapter = {
@@ -42,6 +62,16 @@ export const bayutAdapter: PortalAdapter = {
     if (!listing.price) errors.push('price required');
     return { ok: errors.length === 0, errors };
   },
+  async syncListing({ listingId, auth }: PortalSyncOptions) {
+    await delay(300);
+    return {
+      ok: true,
+      syncedAt: new Date().toISOString(),
+      listingId,
+      portal: 'bayut',
+      note: authNote(auth),
+    };
+  },
 };
 
 export const propertyFinderAdapter: PortalAdapter = {
@@ -60,12 +90,25 @@ export const propertyFinderAdapter: PortalAdapter = {
       images: listing.images || [],
     };
   },
+  async syncListing({ listingId, auth }: PortalSyncOptions) {
+    await delay(300);
+    return {
+      ok: true,
+      syncedAt: new Date().toISOString(),
+      listingId,
+      portal: 'propertyfinder',
+      note: authNote(auth),
+    };
+  },
 };
 
 export const adapters: Record<string, PortalAdapter> = {
   bayut: bayutAdapter,
   propertyfinder: propertyFinderAdapter,
 };
+
+export const bayut = bayutAdapter;
+export const propertyFinder = propertyFinderAdapter;
 
 export function toBayut(listing: Listing) {
   return bayutAdapter.toPortal(listing);
