@@ -1,31 +1,44 @@
-import { NextRequest } from 'next/server';
-import { v4 as uuid } from 'uuid';
-import { ok, readJson } from '@/lib/api';
-import { getDb } from '@/lib/firebaseAdmin';
+import { NextResponse } from "next/server";
 
-function normalizeEntries(entries: Iterable<[string, FormDataEntryValue]>) {
-  return Object.fromEntries(
-    [...entries].filter(([, value]) => typeof value === 'string'),
-  );
-}
+type SubmitBody = {
+  toolId: string;
+  inputs?: Record<string, any>;
+  uid?: string | null;
+};
 
-export async function POST(req: NextRequest) {
-  const contentType = req.headers.get('content-type') || '';
-  const db = getDb();
-  let data: Record<string, unknown> = {};
+export async function POST(req: Request) {
+  const body = (await req.json().catch(() => ({}))) as SubmitBody;
 
-  if (contentType.includes('multipart/form-data')) {
-    const form = await req.formData();
-    data = normalizeEntries(form.entries());
-  } else {
-    data = await readJson<Record<string, unknown>>(req);
+  if (!body?.toolId) {
+    return NextResponse.json({ ok: false, error: "toolId required" }, { status: 400 });
   }
 
-  const id = uuid();
-  await db.collection('free_tools_submissions').doc(id).set({
-    ...data,
-    ts: new Date(),
-  });
+  const now = new Date().toISOString();
+  let result: any = { received: body.inputs || {}, at: now };
 
-  return ok({ id });
+  switch (body.toolId) {
+    case "meta-audit":
+      result.summary = "Meta account audit completed (mock).";
+      result.findings = [
+        "Ad set budget distribution: balanced",
+        "Advantage+ usage: partial (recommend enabling for retargeting)",
+        "Creative coverage: reels OK, static needs variants",
+      ];
+      break;
+    case "listing-health":
+      result.summary = "Listing checks: 12/12 pass (mock).";
+      result.flags = [];
+      break;
+    case "price-estimator":
+      result.summary = "Estimated price range: AED 1.45M – 1.6M (mock).";
+      break;
+    case "brochure-rebrand":
+      result.summary = "Brochure rebrand generated (mock URL).";
+      result.assetUrl = "/mock/brochure.pdf";
+      break;
+    default:
+      result.summary = `Tool ${body.toolId} executed. (mock)`;
+  }
+
+  return NextResponse.json({ ok: true, toolId: body.toolId, result }, { status: 200 });
 }
