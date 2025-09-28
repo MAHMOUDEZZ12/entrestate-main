@@ -1,9 +1,9 @@
 export default function AdminPlans() {
   const plans = [
-    { id: 'meta-suite-basic', name: 'Meta Marketing Suite', price: '$25/mo' },
-    { id: 'listing-portal-basic', name: 'Listing Portal', price: '$39/mo' },
-    { id: 'reality-designer', name: 'Reality Designer', price: '$29/mo' },
-    { id: 'whatsmap', name: 'WhatsMAP', price: '$20/mo' },
+    { id: 'free', name: 'Free', price: '$0/mo' },
+    { id: 'pro', name: 'Pro', price: '$25/mo' },
+    { id: 'growth', name: 'Growth', price: '$39/mo' },
+    { id: 'scale', name: 'Scale', price: '$59/mo' },
   ]
   return (
     <div className="space-y-6">

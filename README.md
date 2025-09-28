@@ -51,26 +51,41 @@ The system is built on a modular, event-driven architecture designed for scalabi
     npm install
     ```
 
-3.  **Set up environment variables:**
-    -   Create a `.env.local` file in the root directory.
-    -   Add your Firebase project configuration keys (from the Firebase console) and your Google AI (Gemini) API key.
-    ```
-    NEXT_PUBLIC_FIREBASE_API_KEY=...
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
-    NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
-    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
-    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
-    NEXT_PUBLIC_FIREBASE_APP_ID=...
-    NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...
+3.  **Configure environment variables:**
+    -   Duplicate `.env.example` to `.env.local` and fill in the required values (see the table below).
+    -   During local development you can set `GENKIT_DISABLE_TELEMETRY=1` to silence Google Cloud telemetry warnings.
 
-    GEMINI_API_KEY=...
-    ```
+    | Variable | Required | Notes |
+    | --- | --- | --- |
+    | `NEXT_PUBLIC_APP_URL` | ✅ | Base URL for the Next.js app (e.g. `http://localhost:3000`). |
+    | `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | ✅ | PayPal REST client ID (live or sandbox). |
+    | `NEXT_PUBLIC_PAYPAL_PLAN_ID_FREE` | ✅ | PayPal billing plan ID for the Free tier. |
+    | `NEXT_PUBLIC_PAYPAL_PLAN_ID_PRO` | ✅ | PayPal billing plan ID for the Pro tier. |
+    | `NEXT_PUBLIC_PAYPAL_PLAN_ID_GROWTH` | ✅ | PayPal billing plan ID for the Growth tier. |
+    | `NEXT_PUBLIC_PAYPAL_PLAN_ID_SCALE` | ✅ | PayPal billing plan ID for the Scale tier. |
+    | `PAYPAL_CLIENT_SECRET` | ✅ | Server-side secret used for PayPal capture API calls. |
+    | `FIREBASE_PROJECT_ID` | ✅ | Needed for server-side Firestore/Admin calls. |
+    | `GENKIT_DISABLE_TELEMETRY` | optional | Set to `1` locally if you do not have Google Cloud credentials configured. |
+    | `GOOGLE_APPLICATION_CREDENTIALS` | optional | Path to a service-account JSON if you want Genkit telemetry in production. |
 
 4.  **Run the development server:**
     ```bash
     npm run dev
     ```
-    The application will be available at `http://localhost:3000`.
+    The application is available at `http://localhost:3000`.
+
+5.  **Validate the project:**
+    ```bash
+    npm run build        # type-check + production compile
+    npm run test         # Vitest unit tests
+    npm run e2e          # Playwright end-to-end smoke tests (requires dev server)
+    ```
+
+### Accessing protected routes
+
+- Workspace tools require an activation cookie. Hit `http://localhost:3000/workspace?activated=1` once to set it.
+- Admin routes require the demo admin cookie. Set `document.cookie = "demo-user=admin; path=/"` in the browser console (or use Playwright’s pre-test hook).
+- When PayPal plan variables are missing the pricing page automatically falls back to an "Explore Workspace" CTA and displays a warning banner.
 
 ---
 

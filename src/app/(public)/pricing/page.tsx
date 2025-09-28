@@ -11,15 +11,35 @@ type Plan = {
 }
 
 const plans: Plan[] = [
-  { id: 'meta-suite-basic', name: 'Meta Marketing Suite', price: '$25/mo', features: ['AI Ads', 'Reels', 'Page Ops'] },
-  { id: 'listing-portal-basic', name: 'Listing Portal', price: '$39/mo', features: ['Sync', 'Analytics', 'Trackers'] },
-  { id: 'reality-designer', name: 'Reality Designer', price: '$29/mo', features: ['Sites', 'Landing Pages', 'Assets'] },
-  { id: 'whatsmap', name: 'WhatsMAP', price: '$20/mo', features: ['WhatsApp Agent', 'Market Library'] },
+  {
+    id: 'free',
+    name: 'Free',
+    price: '$0/mo',
+    features: ['Workspace access', 'Sample projects', 'Community resources'],
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: '$25/mo',
+    features: ['Meta Marketing Suite', 'Listing automation toolkit', 'Priority support'],
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: '$39/mo',
+    features: ['Everything in Pro', 'Advanced analytics', 'Team collaboration'],
+  },
+  {
+    id: 'scale',
+    name: 'Scale',
+    price: '$59/mo',
+    features: ['Everything in Growth', 'Dedicated success manager', 'Custom integrations'],
+  },
 ]
 
 const hasPayPal = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
 
-const planEnvKey = (planId: PlanId) => `NEXT_PUBLIC_PAYPAL_PLAN_ID_${planId.replace(/-/g, '_').toUpperCase()}`
+const planEnvKey = (planId: PlanId) => `NEXT_PUBLIC_PAYPAL_PLAN_ID_${planId.toUpperCase()}`
 
 const missingPlanKeys = plans
   .map((plan) => planEnvKey(plan.id))

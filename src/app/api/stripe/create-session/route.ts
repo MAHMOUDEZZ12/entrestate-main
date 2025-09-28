@@ -1,10 +1,10 @@
-import { ok, bad, readJson } from '@/lib/api';
-import { getDb } from '@/lib/firebaseAdmin';
-import { PLAN_PRICES, PlanId, normalizeEmail } from '@/lib/payments/utils';
+import { ok, bad, readJson } from '@/lib/api'
+import { getDb } from '@/lib/firebaseAdmin'
+import { PLAN_PRICES, PlanId, normalizeEmail } from '@/lib/payments/utils'
 
 interface CreateSessionBody {
-  plan?: PlanId;
-  email?: string;
+  plan?: PlanId
+  email?: string
 }
 
 async function persistStripeSession(sessionId: string, plan: PlanId, email?: string) {
@@ -21,21 +21,21 @@ async function persistStripeSession(sessionId: string, plan: PlanId, email?: str
         ts: new Date(),
       },
       { merge: true },
-    );
+    )
 }
 
 export async function POST(req: Request) {
-  const body = await readJson<CreateSessionBody>(req);
-  const plan: PlanId = body.plan || 'starter';
-  const publishable = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
-  const secret = process.env.STRIPE_SECRET_KEY || '';
+  const body = await readJson<CreateSessionBody>(req)
+  const plan: PlanId = body.plan || 'pro'
+  const publishable = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+  const secret = process.env.STRIPE_SECRET_KEY || ''
 
   if (!publishable || !secret) {
-    return bad('stripe not configured', 503);
+    return bad('stripe not configured', 503)
   }
 
-  const amount = Math.round(parseFloat(PLAN_PRICES[plan] || PLAN_PRICES.starter) * 100);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const amount = Math.round(parseFloat(PLAN_PRICES[plan] || PLAN_PRICES['pro']) * 100)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   const params = new URLSearchParams({
     mode: 'payment',
@@ -45,14 +45,15 @@ export async function POST(req: Request) {
     'line_items[0][price_data][product_data][name]': plan,
     'line_items[0][price_data][unit_amount]': String(amount),
     'line_items[0][quantity]': '1',
-  });
+  })
 
   if (body.email) {
-    params.set('customer_email', normalizeEmail(body.email));
-    params.set('metadata[email]', normalizeEmail(body.email));
+    const normalizedEmail = normalizeEmail(body.email)
+    params.set('customer_email', normalizedEmail)
+    params.set('metadata[email]', normalizedEmail)
   }
 
-  params.set('metadata[plan]', plan);
+  params.set('metadata[plan]', plan)
 
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
@@ -61,13 +62,13 @@ export async function POST(req: Request) {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: params,
-  });
+  })
 
-  const json = await response.json();
+  const json = await response.json()
   if (!response.ok) {
-    return bad(json?.error?.message || 'stripe create failed', 500);
+    return bad(json?.error?.message || 'stripe create failed', 500)
   }
 
-  await persistStripeSession(json.id, plan, body.email);
-  return ok({ id: json.id });
+  await persistStripeSession(json.id, plan, body.email)
+  return ok({ id: json.id })
 }

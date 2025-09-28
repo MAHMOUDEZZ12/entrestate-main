@@ -37,7 +37,7 @@ async function persistOrder(orderId: string, plan: PlanId, status: string, email
 
 export async function POST(req: Request) {
   const body = await readJson<CreateOrderBody>(req)
-  const plan = (body.planId || body.plan) as PlanId | undefined
+  const plan = ((body.planId || body.plan) as PlanId | undefined) ?? 'pro'
   if (!plan) {
     return bad('planId required', 400)
   }
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     return ok({ id, status: 'CREATED', mode: 'mock' })
   }
 
-  const price = PLAN_PRICES[plan] || PLAN_PRICES['meta-suite-basic']
+  const price = plan ? PLAN_PRICES[plan] : PLAN_PRICES['pro']
   const auth = Buffer.from(`${clientId}:${secret}`).toString('base64')
   const response = await fetch(`${paypalBaseUrl()}/v2/checkout/orders`, {
     method: 'POST',
